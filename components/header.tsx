@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
+import { IS_MOCK_MODE } from '@/lib/ai-service';
 
 export default function Header() {
   return (
@@ -20,8 +21,19 @@ export default function Header() {
             </div>
             <span className="font-bold text-lg">ReviewReply</span>
           </div>
-          <div className="text-xs text-muted-foreground md:text-sm">
-            Professional replies for local businesses
+          <div className="flex items-center gap-3 text-xs md:text-sm text-muted-foreground">
+            <span>Professional replies for local businesses</span>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                IS_MOCK_MODE
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'
+                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200'
+              }`}
+              aria-label={IS_MOCK_MODE ? 'Mock mode enabled' : 'Live AI enabled'}
+            >
+              <span className="h-2 w-2 rounded-full bg-current" />
+              {IS_MOCK_MODE ? 'Mock Mode' : 'Live AI'}
+            </span>
           </div>
         </div>
       </div>

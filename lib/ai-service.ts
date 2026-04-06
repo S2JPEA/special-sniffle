@@ -1,6 +1,7 @@
 import { GenerationRequest, GenerationResponse, ReviewType } from './types';
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
+export const IS_MOCK_MODE = USE_MOCK;
 const API_ENDPOINT = '/api/generate';
 
 /**
@@ -173,13 +174,17 @@ export async function generateReplyOptions(
         body: JSON.stringify(request),
       });
 
-      if (res.ok) {
-        return (await res.json()) as GenerationResponse;
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(
+          `LLM generation failed (${res.status}): ${errorText || 'unknown error'}`
+        );
       }
-      // If the API returned an error, fall back to mock
-      console.warn('LLM generation failed, falling back to mock', await res.text());
+
+      return (await res.json()) as GenerationResponse;
     } catch (err) {
-      console.warn('LLM generation error, falling back to mock', err);
+      // Surface error to UI so prod doesn't silently fall back to mock
+      throw err;
     }
   }
 
