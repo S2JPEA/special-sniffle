@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { copyToClipboard, text } from '@/lib/utils';
 import { GenerationResponse, Tone } from '@/lib/types';
+import { generateReplyOptions } from '@/lib/ai-service';
 import {
   Copy,
   Check,
@@ -20,7 +21,7 @@ import {
 
 interface ResponseCardsProps {
   responses: GenerationResponse;
-  onRegenerate: () => void;
+  onRegenerate?: (next: GenerationResponse) => void; // optional upward notification
 }
 
 const TONE_CONFIG = {
@@ -43,7 +44,81 @@ const TONE_CONFIG = {
 
 export default function ResponseCards({ responses, onRegenerate }: ResponseCardsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [cooldowns, setCooldowns] = useState<Record<Tone, number>>({
+    warm: 0,
+    professional: 0,
+    recovery: 0,
+  });
+  const [isRegenLoading, setIsRegenLoading] = useState<Record<Tone, boolean>>({
+    warm: false,
+    professional: false,
+    recovery: false,
+  });
   const { toast } = useToast();
+
+  const startCooldown = (tone: Tone) => {
+    const until = Date.now() + 15_000;
+    setCooldowns((prev) => ({ ...prev, [tone]: until }));
+    setTimeout(() => {
+      setCooldowns((prev) => ({ ...prev, [tone]: 0 }));
+    }, 15_000);
+  };
+
+  const handleRegenerate = async (tone: Tone) => {
+    if (cooldowns[tone] > Date.now()) return;
+    if (!generateReplyOptions) return;
+    setIsRegenLoading((prev) => ({ ...prev, [tone]: true }));
+    startCooldown(tone);
+
+    try {
+      const newResponse = await generateReplyOptions(baseRequest);
+      const updatedReplies = responses.replies.map((r) =>
+        r.tone === tone
+          ? newResponse.replies.find((nr) => nr.tone === tone) || r
+          : r
+      );
+
+      // Notify parent if provided; otherwise mutate local state
+      if (onRegenerate) {
+        onRegenerate({
+          ...responses,
+          replies: updatedReplies,
+          reviewType: newResponse.reviewType,
+        } as any);
+      } else {
+        responses.replies.splice(0, responses.replies.length, ...updatedReplies);
+        responses.reviewType = newResponse.reviewType;
+      }
+
+      toast({
+        title: 'Reply refreshed',
+        description: `${tone} tone regenerated`,
+        variant: 'success',
+        duration: 1800,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Failed to regenerate',
+        description: err?.message || 'Please try again',
+        variant: 'destructive',
+        duration: 2500,
+      });
+    } finally {
+      setIsRegenLoading((prev) => ({ ...prev, [tone]: false }));
+    }
+  };
+
+  // base request reconstructed from current response context
+  const baseRequest = useMemo(() => {
+    return {
+      review: responses.originalReview,
+      businessName: undefined,
+      industry: undefined,
+      responseLength: undefined,
+      includeCallToAction: undefined,
+      isNegativeReview: responses.reviewType === 'negative',
+    };
+  }, [responses.originalReview, responses.reviewType]);
 
   const handleCopy = async (text: string, tone: Tone) => {
     const success = await copyToClipboard(text);
@@ -96,32 +171,23 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      {/* Response Header */}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="space-y-6">
       <div className="space-y-3">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold">Your Responses</h2>
-            <Badge variant="outline" className="text-xs">
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-primary">Generated</p>
+              <h2 className="text-2xl font-semibold">Reply options</h2>
+            </div>
+            <Badge variant="outline" className="text-xs border-border/70 bg-surface-2">
               {responses.reviewType === 'positive'
-                ? '👍 Positive'
+                ? 'Positive'
                 : responses.reviewType === 'negative'
-                  ? '👎 Negative'
-                  : '➡️ Neutral'}
+                  ? 'Negative'
+                  : 'Neutral'}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Choose the response that fits your brand best. Click to copy.
-          </p>
+          <p className="text-sm text-muted-foreground">Choose the response that fits your brand. Copy or refresh any tone.</p>
         </motion.div>
       </div>
 
@@ -140,19 +206,17 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-shadow">
+                <Card className="overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/15">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{config.icon}</span>
                         <div>
-                          <CardTitle className="text-lg capitalize">
-                            {reply.tone} Tone
-                          </CardTitle>
+                          <CardTitle className="text-lg capitalize">{reply.tone} tone</CardTitle>
                           <CardDescription>{config.description}</CardDescription>
                         </div>
                       </div>
-                      <Badge variant={config.color} className="text-xs">
+                      <Badge variant={config.color} className="text-xs border-border/60">
                         {reply.tone}
                       </Badge>
                     </div>
@@ -160,22 +224,18 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
 
                   <CardContent className="space-y-4">
                     {/* Response Text */}
-                    <div className="rounded-lg bg-muted/50 p-4 border border-border/30">
-                      <p className="text-sm leading-relaxed text-foreground">
-                        {reply.content}
-                      </p>
+                    <div className="rounded-xl border border-border/60 bg-surface-2/80 p-4">
+                      <p className="text-sm leading-relaxed text-foreground">{reply.content}</p>
                     </div>
 
                     {/* Explanation */}
-                    <div className="flex gap-2 rounded-lg bg-accent/5 p-3 border border-accent/10">
+                    <div className="flex gap-2 rounded-lg border border-accent/15 bg-accent/5 p-3">
                       <Lightbulb className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-muted-foreground">{reply.explanation}</p>
                     </div>
 
                     {/* Character Count */}
-                    <div className="text-xs text-muted-foreground">
-                      {reply.content.length} characters
-                    </div>
+                    <div className="text-xs text-muted-foreground">{reply.content.length} characters</div>
 
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-2 pt-2">
@@ -183,12 +243,7 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <Button
-                          onClick={() => handleCopy(reply.content, reply.tone)}
-                          variant={isCopied ? 'default' : 'outline'}
-                          size="sm"
-                          className="w-full"
-                        >
+                        <Button onClick={() => handleCopy(reply.content, reply.tone)} variant={isCopied ? 'default' : 'outline'} size="sm" className="w-full rounded-lg">
                           {isCopied ? (
                             <>
                               <Check className="h-4 w-4 mr-1" />
@@ -203,18 +258,20 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                         </Button>
                       </motion.div>
 
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
-                          onClick={onRegenerate}
+                          onClick={() => handleRegenerate(reply.tone)}
                           variant="outline"
                           size="sm"
-                          className="w-full"
+                          className="w-full rounded-lg"
+                          disabled={isRegenLoading[reply.tone] || cooldowns[reply.tone] > Date.now()}
                         >
                           <RotateCcw className="h-4 w-4 mr-1" />
-                          Regenerate
+                          {isRegenLoading[reply.tone]
+                            ? 'Refreshing...'
+                            : cooldowns[reply.tone] > Date.now()
+                              ? 'Cooling down'
+                              : 'Regenerate'}
                         </Button>
                       </motion.div>
                     </div>
@@ -227,45 +284,24 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
       </div>
 
       {/* Bulk Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="flex gap-2 pt-4 border-t border-border/40"
-      >
-        <Button
-          onClick={handleDownload}
-          variant="secondary"
-          className="flex-1 flex items-center justify-center gap-2"
-        >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} className="flex gap-2 pt-4 border-t border-border/40">
+        <Button onClick={handleDownload} variant="secondary" className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-border/60 bg-surface-2">
           <Download className="h-4 w-4" />
           Download all
         </Button>
-        <Button
-          onClick={handleShare}
-          variant="secondary"
-          className="flex-1 flex items-center justify-center gap-2"
-        >
+        <Button onClick={handleShare} variant="secondary" className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-border/60 bg-surface-2">
           <Share2 className="h-4 w-4" />
           Share
         </Button>
       </motion.div>
 
       {/* Tips */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-        className="rounded-lg border border-border/50 bg-muted/30 p-4 space-y-2"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.4 }} className="rounded-xl border border-border/60 bg-surface-2 p-4 space-y-2">
         <div className="flex gap-2">
           <TrendingUp className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-foreground">Pro tip</p>
-            <p className="text-xs text-muted-foreground">
-              Personalize the reply even more by mentioning specific details from the review or your
-              business name.
-            </p>
+            <p className="text-xs text-muted-foreground">Personalize the reply by including specific details from the review or your business name.</p>
           </div>
         </div>
       </motion.div>

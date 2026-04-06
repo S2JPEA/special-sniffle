@@ -1,100 +1,41 @@
 'use client';
 
 import React from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border/40 bg-muted/30 px-4 py-8 md:py-12">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-8 md:grid-cols-4 mb-8">
-          {/* Product Column */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">Product</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  For Businesses
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Pricing
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources Column */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Guide
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  API Docs
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company Column */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">Company</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Privacy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Terms
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter Placeholder */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">Newsletter</h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Get tips for better reviews
+    <footer className="border-t border-border/50 bg-surface px-4 py-12 text-sm">
+      <div className="mx-auto max-w-6xl space-y-10">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-sm space-y-3">
+            <div className="flex items-center gap-2 text-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold">ReviewReply</p>
+                <p className="text-xs text-muted-foreground">Premium AI replies for real businesses — free forever.</p>
+              </div>
+            </div>
+            <p className="text-muted-foreground">
+              Keep customer conversations on-brand with fast, trustworthy responses; no accounts, no data stored.
             </p>
-            <div className="bg-muted rounded p-2 text-xs text-muted-foreground">
-              [Newsletter signup coming soon]
+          </div>
+
+          <div className="flex-1 space-y-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Stay updated</p>
+            <div className="rounded-xl border border-border/60 bg-surface-2 p-3 text-xs text-muted-foreground">
+              Newsletter coming soon — practical tips for faster, better replies.
             </div>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-border/40 pt-8 flex justify-between items-center">
-          <p className="text-xs text-muted-foreground">
-            © {currentYear} ReviewReply. Made with{' '}
-            <Heart className="inline h-3 w-3 text-destructive" /> for local businesses.
-          </p>
-          <p className="text-xs text-muted-foreground">No data stored • No accounts needed</p>
+        <div className="flex flex-col gap-3 border-t border-border/50 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <span>© {currentYear} ReviewReply. Built with care for local businesses.</span>
+          <span>No login • No storage • Works on mobile</span>
         </div>
       </div>
     </footer>

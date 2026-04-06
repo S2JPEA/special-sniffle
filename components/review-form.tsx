@@ -9,12 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { generateReplyOptions, EXAMPLE_REVIEWS } from '@/lib/ai-service';
 import { validate, parseReviewInput } from '@/lib/utils';
 import { GenerationResponse, ResponseLength } from '@/lib/types';
-import { Sparkles, Zap, Copy } from 'lucide-react';
+import { Sparkles, Zap } from 'lucide-react';
 
 interface ReviewFormProps {
   onSuccessfulGeneration: (responses: GenerationResponse) => void;
@@ -112,21 +111,26 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Card className="sticky top-20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="sticky top-20 rounded-2xl border border-border/60 bg-surface/90 shadow-lg shadow-black/20 backdrop-blur">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Zap className="h-5 w-5 text-primary" />
-            Paste Your Review
+            Review workspace
           </CardTitle>
-          <CardDescription>Describe what the customer said</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Paste the review, adjust options, and generate polished replies.
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* Review Textarea */}
           <div className="space-y-2">
-            <Label htmlFor="review" className="text-base font-semibold">
-              Customer Review *
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="review" className="text-sm font-semibold text-foreground">
+                Customer review
+              </Label>
+              <span className="text-xs text-muted-foreground">Required</span>
+            </div>
             <Textarea
               id="review"
               placeholder="Paste the customer review here... (minimum 10 characters)"
@@ -139,61 +143,19 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
               className="min-h-[120px] resize-none"
               aria-describedby="review-count"
             />
-            <div
-              id="review-count"
-              className="flex justify-between text-xs text-muted-foreground"
-            >
-              <span>
-                {charCount} characters • {wordCount} words
-              </span>
-              <span className={charCount > 4800 ? 'text-amber-600' : ''}>
-                {charCount}/5000
-              </span>
+            <div id="review-count" className="flex justify-between text-xs text-muted-foreground">
+              <span>{charCount} characters • {wordCount} words</span>
+              <span className={charCount > 4800 ? 'text-amber-500' : ''}>{charCount}/5000</span>
             </div>
             {errors.review && (
               <p className="text-xs text-destructive font-medium">{errors.review}</p>
             )}
           </div>
 
-          {/* Quick Example Buttons */}
-          {!review && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground">Try an example:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {EXAMPLE_REVIEWS.slice(0, 2).map((example, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleLoadExample(example.text)}
-                    disabled={isLoading}
-                    className="h-auto text-xs font-normal"
-                  >
-                    <span className="line-clamp-2 text-left">{example.label}</span>
-                  </Button>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {EXAMPLE_REVIEWS.slice(2, 4).map((example, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleLoadExample(example.text)}
-                    disabled={isLoading}
-                    className="h-auto text-xs font-normal"
-                  >
-                    <span className="line-clamp-2 text-left">{example.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Business Info */}
           <div className="space-y-2">
-            <Label htmlFor="business" className="text-sm font-semibold">
-              Business Name (optional)
+            <Label htmlFor="business" className="text-sm font-semibold text-foreground">
+              Business name (optional)
             </Label>
             <Input
               id="business"
@@ -206,7 +168,7 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
 
           {/* Industry Select */}
           <div className="space-y-2">
-            <Label htmlFor="industry" className="text-sm font-semibold">
+            <Label htmlFor="industry" className="text-sm font-semibold text-foreground">
               Industry (optional)
             </Label>
             <Select
@@ -226,46 +188,59 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
 
           {/* Response Length */}
           <div className="space-y-2">
-            <Label htmlFor="length" className="text-sm font-semibold">
-              Response Length
+            <Label htmlFor="length" className="text-sm font-semibold text-foreground">
+              Response length
             </Label>
-            <Select
-              id="length"
-              value={responseLength}
-              onChange={(e) => setResponseLength(e.target.value as ResponseLength)}
-              disabled={isLoading}
-            >
-              <option value="short">Short (1-2 sentences)</option>
-              <option value="medium">Medium (2-3 sentences)</option>
-              <option value="long">Long (3-4 sentences)</option>
-            </Select>
+            <div className="grid grid-cols-3 gap-2 text-sm font-medium">
+              {[
+                { value: 'short', label: 'Short' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'long', label: 'Long' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setResponseLength(option.value as ResponseLength)}
+                  className={`h-10 rounded-lg border px-3 transition ${
+                    responseLength === option.value
+                      ? 'border-primary bg-primary/15 text-foreground'
+                      : 'border-border/70 bg-surface-2 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                  }`}
+                  type="button"
+                  disabled={isLoading}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Checkboxes */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="flex items-center gap-3 rounded-lg border border-border/70 bg-surface-2 px-3 py-3 text-sm">
               <Checkbox
                 id="cta"
                 checked={includeCallToAction}
                 onChange={(e) => setIncludeCallToAction(e.currentTarget.checked)}
                 disabled={isLoading}
               />
-              <Label htmlFor="cta" className="text-sm cursor-pointer font-normal">
-                Include call-to-action
-              </Label>
-            </div>
+              <div className="space-y-0.5">
+                <div className="font-medium text-foreground">Include CTA</div>
+                <p className="text-xs text-muted-foreground">Invite the customer back or to contact you.</p>
+              </div>
+            </label>
 
-            <div className="flex items-center gap-3">
+            <label className="flex items-center gap-3 rounded-lg border border-border/70 bg-surface-2 px-3 py-3 text-sm">
               <Checkbox
                 id="negative"
                 checked={isNegativeReview}
                 onChange={(e) => setIsNegativeReview(e.currentTarget.checked)}
                 disabled={isLoading}
               />
-              <Label htmlFor="negative" className="text-sm cursor-pointer font-normal">
-                Customer left a negative review
-              </Label>
-            </div>
+              <div className="space-y-0.5">
+                <div className="font-medium text-foreground">Negative review</div>
+                <p className="text-xs text-muted-foreground">Switches tone to recovery-first.</p>
+              </div>
+            </label>
           </div>
 
           {/* Generate Button */}
@@ -276,7 +251,7 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
             <Button
               onClick={handleGenerate}
               disabled={isLoading || !review.trim()}
-              className="w-full h-11 font-semibold flex items-center gap-2"
+              className="w-full h-12 rounded-xl bg-primary font-semibold shadow-lg shadow-primary/30 transition hover:bg-primary-hover"
               size="lg"
             >
               {isLoading ? (
@@ -287,18 +262,15 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Replies
+                  Generate replies
                 </>
               )}
             </Button>
           </motion.div>
 
           {/* Info Box */}
-          <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-semibold">💡 Tip:</span> Be as specific as possible with your review
-              description for better tailored responses.
-            </p>
+          <div className="rounded-xl border border-border/60 bg-surface-2 p-3 text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">Tip:</span> Be specific and include names, dates, or visit details for sharper replies.
           </div>
 
           {/* Clear Button */}
@@ -307,7 +279,7 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
               onClick={resetForm}
               variant="secondary"
               disabled={isLoading}
-              className="w-full"
+              className="w-full rounded-xl border border-border/60 bg-surface-2 text-foreground hover:border-primary/50 hover:text-primary"
             >
               Clear
             </Button>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/toast';
+import ThemeProvider from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Review Reply Generator - Professional Replies in Seconds',
@@ -23,7 +24,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body suppressHydrationWarning>
-        <ToastProvider>{children}</ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

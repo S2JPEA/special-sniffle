@@ -1,54 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.6%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.6%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.6%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 84.2% 60.2%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --ring: 0 0% 3.6%;
-    --radius: 0.5rem;
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    /* Dark theme (default) */
+    --bg: 11 18 32;
+    --bg-elevated: 17 24 39;
+    --surface: 15 23 42;
+    --surface-2: 19 29 49;
+    --surface-3: 24 34 53;
+    --card: 17 24 39;
+    --card-hover: 22 32 51;
+    --border: 34 48 74;
+    --border-soft: 27 41 64;
+    --text: 248 250 252;
+    --text-muted: 148 163 184;
+    --text-soft: 100 116 139;
+    --primary: 59 130 246;
+    --primary-hover: 37 99 235;
+    --primary-active: 29 78 216;
+    --primary-foreground: 255 255 255;
+    --accent: 20 184 166;
+    --accent-hover: 15 118 110;
+    --accent-foreground: 248 250 252;
+    --success: 34 197 94;
+    --warning: 245 158 11;
+    --error: 239 68 68;
+    --ring: rgba(59, 130, 246, 0.45);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.35);
+    --input: var(--border);
+    --muted: #0f172a;
+    --muted-foreground: var(--text-soft);
+    --foreground: var(--text);
+    --background: var(--bg);
+    --card-foreground: var(--text);
+    --muted-foreground: var(--text-soft);
+    --popover: var(--surface);
+    --popover-foreground: var(--text);
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--text);
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --font-sans: 'Inter', 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
   }
 
-  .dark {
-    --background: 0 0% 3.6%;
-    --foreground: 0 0% 98.2%;
-    --card: 0 0% 8.5%;
-    --card-foreground: 0 0% 98.2%;
-    --popover: 0 0% 8.5%;
-    --popover-foreground: 0 0% 98.2%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 84.2% 60.2%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 9%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --primary: 0 0% 98.2%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98.2%;
-    --ring: 0 84.2% 60.2%;
+  :root[data-theme='light'] {
+    --bg: 248 250 252;
+    --bg-elevated: 241 245 249;
+    --surface: 255 255 255;
+    --surface-2: 248 250 252;
+    --surface-3: 238 242 247;
+    --card: 255 255 255;
+    --card-hover: 248 251 255;
+    --border: 215 224 234;
+    --border-soft: 229 234 241;
+    --text: 15 23 42;
+    --text-muted: 71 85 105;
+    --text-soft: 100 116 139;
+    --primary: 37 99 235;
+    --primary-hover: 29 78 216;
+    --primary-active: 30 64 175;
+    --primary-foreground: 255 255 255;
+    --accent: 15 118 110;
+    --accent-hover: 17 94 89;
+    --accent-foreground: 255 255 255;
+    --success: 21 128 61;
+    --warning: 180 83 9;
+    --error: 185 28 28;
+    --ring: rgba(37, 99, 235, 0.25);
+    --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.1);
+    --input: var(--border);
+    --muted: #f8fafc;
+    --muted-foreground: var(--text-soft);
+    --foreground: var(--text);
+    --background: var(--bg);
+    --card-foreground: var(--text);
+    --muted-foreground: var(--text-soft);
+    --popover: var(--surface);
+    --popover-foreground: var(--text);
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--text);
   }
 }
 
@@ -56,22 +93,48 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    color: rgb(var(--text));
+    background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.07), transparent 30%),
+      radial-gradient(circle at 80% 0%, rgba(20, 184, 166, 0.08), transparent 28%),
+      rgb(var(--bg));
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.01em;
   }
 }
 
-/* Optional: Remove default button styles for better control */
+@layer components {
+  .glass-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+    border: 1px solid rgb(var(--border));
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02), var(--shadow-lg);
+  }
+
+  .surface {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--border));
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    box-shadow: 0 0 0 1px var(--ring);
+  }
+}
+
 button {
   @apply transition-colors duration-200;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
-}
-
-/* Prevent layout shift on vertical scrollbar */
-html {
   overflow-y: scroll;
 }
