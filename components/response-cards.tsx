@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,11 +58,6 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
     recovery: false,
   });
   const { toast } = useToast();
-  const cardRefs = {
-    warm: useRef<HTMLDivElement | null>(null),
-    professional: useRef<HTMLDivElement | null>(null),
-    recovery: useRef<HTMLDivElement | null>(null),
-  };
 
   const startCooldown = (tone: Tone) => {
     const until = Date.now() + 15_000;
@@ -178,19 +173,27 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
     }
   };
 
+  const scrollToTone = (tone: Tone) => {
+    const el = document.getElementById(`tone-${tone}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="space-y-6">
       <div className="space-y-3">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {[
-              { tone: 'warm', label: 'Warm', icon: <Flame className="h-3.5 w-3.5" /> },
-              { tone: 'professional', label: 'Professional', icon: <Briefcase className="h-3.5 w-3.5" /> },
-              { tone: 'recovery', label: 'Recovery', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+              { tone: 'warm' as Tone, label: 'Warm', icon: <Flame className="h-3.5 w-3.5" /> },
+              { tone: 'professional' as Tone, label: 'Professional', icon: <Briefcase className="h-3.5 w-3.5" /> },
+              { tone: 'recovery' as Tone, label: 'Recovery', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
             ].map(({ tone, label, icon }) => (
               <button
                 key={tone}
-                onClick={() => cardRefs[tone as Tone].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                type="button"
+                onClick={() => scrollToTone(tone)}
                 className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
               >
                 {icon}
@@ -235,7 +238,8 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                ref={cardRefs[reply.tone]}
+                id={`tone-${reply.tone}`}
+                className="scroll-mt-28"
               >
                 <Card className="overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/15">
                   <CardHeader className="pb-3">
