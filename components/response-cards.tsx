@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,11 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
     recovery: false,
   });
   const { toast } = useToast();
+  const cardRefs = {
+    warm: useRef<HTMLDivElement | null>(null),
+    professional: useRef<HTMLDivElement | null>(null),
+    recovery: useRef<HTMLDivElement | null>(null),
+  };
 
   const startCooldown = (tone: Tone) => {
     const until = Date.now() + 15_000;
@@ -174,11 +179,16 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="space-y-6">
       <div className="space-y-3">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-primary">Generated</p>
-              <h2 className="text-2xl font-semibold">Reply options</h2>
-            </div>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {(['warm', 'professional', 'recovery'] as Tone[]).map((tone) => (
+              <button
+                key={tone}
+                onClick={() => cardRefs[tone].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="rounded-full border border-border/70 bg-surface-2 px-3 py-1 text-xs font-semibold capitalize text-muted-foreground transition hover:border-primary hover:text-primary"
+              >
+                {tone}
+              </button>
+            ))}
             <Badge variant="outline" className="text-xs border-border/70 bg-surface-2">
               {responses.reviewType === 'positive'
                 ? 'Positive'
@@ -187,7 +197,6 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                   : 'Neutral'}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">Choose the response that fits your brand. Copy or refresh any tone.</p>
         </motion.div>
       </div>
 
@@ -205,6 +214,7 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
+                ref={cardRefs[reply.tone]}
               >
                 <Card className="overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/15">
                   <CardHeader className="pb-3">

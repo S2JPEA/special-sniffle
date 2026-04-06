@@ -255,10 +255,10 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
               size="lg"
             >
               {isLoading ? (
-                <>
+                <div className="flex items-center justify-center gap-2 w-full">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                  Generating...
-                </>
+                  <span>Generating...</span>
+                </div>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
@@ -269,9 +269,7 @@ export default function ReviewForm({ onSuccessfulGeneration }: ReviewFormProps) 
           </motion.div>
 
           {/* Info Box */}
-          <div className="rounded-xl border border-border/60 bg-surface-2 p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Tip:</span> Be specific and include names, dates, or visit details for sharper replies.
-          </div>
+          {/* Removed tip to keep form minimal */}
 
           {/* Clear Button */}
           {review && (

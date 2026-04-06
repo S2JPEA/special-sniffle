@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ShieldCheck, Smartphone, Zap } from 'lucide-react';
 import ReviewForm from '@/components/review-form';
@@ -13,10 +13,14 @@ import { GenerationResponse } from '@/lib/types';
 export default function Home() {
   const [responses, setResponses] = useState<GenerationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const responsesRef = useRef<HTMLDivElement | null>(null);
 
   const handleGenerateResponses = async (responses: GenerationResponse) => {
     setResponses(responses);
     setIsLoading(false);
+    if (responsesRef.current) {
+      responsesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -63,7 +67,11 @@ export default function Home() {
         </section>
 
         {/* Main App Section */}
-        <section id="workspace" className="relative scroll-mt-24 px-4 py-10 md:py-12 -mt-2 md:-mt-4">
+        <section
+          id="workspace"
+          ref={responsesRef}
+          className="relative scroll-mt-24 px-4 py-10 md:py-12 -mt-2 md:-mt-4"
+        >
           <div className="mx-auto max-w-6xl">
             <motion.div
               initial={{ opacity: 0, y: 12 }}

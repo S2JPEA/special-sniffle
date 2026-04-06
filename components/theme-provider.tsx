@@ -45,8 +45,9 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme]);
-
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
-
