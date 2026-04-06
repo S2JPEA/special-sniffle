@@ -6,9 +6,29 @@ import { Zap, Moon, Sun } from 'lucide-react';
 import { IS_MOCK_MODE } from '@/lib/ai-service';
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
+import { useGenerationStatus } from '@/hooks/use-generation-status';
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
+  const { status } = useGenerationStatus();
+
+  const live = status ? status.isLive : !IS_MOCK_MODE;
+  const chipLabel = status
+    ? status.isLive
+      ? 'Live AI'
+      : status.useMock || !status.hasKey
+        ? 'Mock'
+        : 'Unavailable'
+    : IS_MOCK_MODE
+      ? 'Mock'
+      : 'Live AI';
+  const chipColor = status
+    ? status.isLive
+      ? 'emerald'
+      : 'amber'
+    : IS_MOCK_MODE
+      ? 'amber'
+      : 'emerald';
 
   return (
     <motion.header
@@ -32,18 +52,18 @@ export default function Header() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span
               className={`hidden sm:inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
-                IS_MOCK_MODE
-                  ? 'border-amber-300/50 bg-amber-500/10 text-amber-100'
-                  : 'border-emerald-300/50 bg-emerald-500/10 text-emerald-50'
+                chipColor === 'emerald'
+                  ? 'border-emerald-300/50 bg-emerald-500/10 text-emerald-50'
+                  : 'border-amber-300/50 bg-amber-500/10 text-amber-100'
               }`}
-              aria-label={IS_MOCK_MODE ? 'Mock mode enabled' : 'Live AI enabled'}
+              aria-label={chipLabel}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  IS_MOCK_MODE ? 'bg-amber-400' : 'bg-emerald-400'
+                  chipColor === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400'
                 }`}
               />
-              {IS_MOCK_MODE ? 'Mock' : 'Live'}
+              {chipLabel}
             </span>
 
             <Button
