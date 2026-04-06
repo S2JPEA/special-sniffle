@@ -125,75 +125,26 @@ npm run build
 
 ## 🤖 AI Generation
 
-### Current Implementation (Mock)
+The app now supports **real LLM replies via OpenAI** with a safe server-side proxy, plus a mock fallback for instant demos.
 
-The app uses **mock AI generation** with deterministic logic:
-- Sentiment detection based on keyword analysis
-- Tone-specific response templates
-- Dynamic personalization with business name/industry
-- Response length variations
+### Configure OpenAI (recommended)
 
-This allows the MVP to work immediately without an API key.
+1) Copy the example env file and add your key (do **not** commit it):
+```
+cp .env.example .env.local
+OPENAI_API_KEY=your-new-key
+OPENAI_MODEL=gpt-4o-mini
+NEXT_PUBLIC_USE_MOCK=false
+```
 
-### Connecting a Real AI Model
+2) In Vercel, add `OPENAI_API_KEY` and (optionally) `OPENAI_MODEL` in Project Settings → Environment Variables. Do **not** expose the key in `NEXT_PUBLIC_*`.
 
-To connect to OpenAI, Claude, or another model:
+3) The API route at `app/api/generate/route.ts` calls OpenAI Chat Completions with JSON output (edge runtime). Model is configurable via `OPENAI_MODEL`.
 
-1. **Place API call logic in `lib/ai-service.ts`**
+4) Frontend uses `lib/ai-service.ts` to call `/api/generate`. If the call fails or `NEXT_PUBLIC_USE_MOCK=true`, it automatically falls back to the mock generator so the app always works.
 
-   Replace the `generateReplyOptions` function:
-
-   ```typescript
-   export async function generateReplyOptions(
-     request: GenerationRequest
-   ): Promise<GenerationResponse> {
-     // Call your real AI API here
-     const response = await fetch('/api/generate', {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify(request),
-     });
-
-     return response.json();
-   }
-   ```
-
-2. **Create a backend API route** (optional, for security):
-
-   ```typescript
-   // app/api/generate/route.ts
-   import { NextRequest, NextResponse } from 'next/server';
-   import OpenAI from 'openai';
-
-   export async function POST(request: NextRequest) {
-     const body = await request.json();
-
-     const openai = new OpenAI({
-       apiKey: process.env.OPENAI_API_KEY,
-     });
-
-     const prompt = buildPrompt(body);
-
-     const response = await openai.chat.completions.create({
-       model: 'gpt-4',
-       messages: [{ role: 'user', content: prompt }],
-       temperature: 0.7,
-     });
-
-     // Parse and format response
-     return NextResponse.json(parseResponse(response));
-   }
-   ```
-
-3. **Add API key to `.env.local`**:
-
-   ```
-   OPENAI_API_KEY=sk-...
-   ```
-
-4. **Update TypeScript types** if needed in `lib/types.ts`
-
-**The interface stays the same**, so the rest of the app needs no changes!
+### Staying mock-only
+Set `NEXT_PUBLIC_USE_MOCK=true` in `.env.local` to force local logic and avoid external calls (useful for offline demos).
 
 ## 📦 Component Library
 

@@ -1,5 +1,8 @@
 import { GenerationRequest, GenerationResponse, ReviewType } from './types';
 
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
+const API_ENDPOINT = '/api/generate';
+
 /**
  * Mock AI Generation Service
  * This service generates professional review replies using deterministic logic.
@@ -161,7 +164,26 @@ function generateRecoveryReply(
 export async function generateReplyOptions(
   request: GenerationRequest
 ): Promise<GenerationResponse> {
-  // Simulate a small delay to feel more realistic
+  // Try live LLM first unless explicitly forced to mock
+  if (!USE_MOCK) {
+    try {
+      const res = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      });
+
+      if (res.ok) {
+        return (await res.json()) as GenerationResponse;
+      }
+      // If the API returned an error, fall back to mock
+      console.warn('LLM generation failed, falling back to mock', await res.text());
+    } catch (err) {
+      console.warn('LLM generation error, falling back to mock', err);
+    }
+  }
+
+  // Mock path (offline/demo)
   await new Promise((resolve) => setTimeout(resolve, 300));
 
   const reviewType = detectReviewType(
