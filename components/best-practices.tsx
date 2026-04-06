@@ -141,7 +141,7 @@ export default function BestPractices() {
             <div>
               <h4 className="font-semibold text-sm mb-2 text-foreground">1. Sounding Robotic</h4>
               <p className="text-sm text-muted-foreground">
-                Avoid templated responses that don't address the specific review. Reference details
+                Avoid templated responses that do not address the specific review. Reference details
                 to show you actually read it.
               </p>
             </div>
