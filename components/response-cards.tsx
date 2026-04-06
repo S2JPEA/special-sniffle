@@ -17,6 +17,9 @@ import {
   Share2,
   TrendingUp,
   Lightbulb,
+  Flame,
+  Briefcase,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface ResponseCardsProps {
@@ -180,22 +183,40 @@ export default function ResponseCards({ responses, onRegenerate }: ResponseCards
       <div className="space-y-3">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            {(['warm', 'professional', 'recovery'] as Tone[]).map((tone) => (
+            {[
+              { tone: 'warm', label: 'Warm', icon: <Flame className="h-3.5 w-3.5" /> },
+              { tone: 'professional', label: 'Professional', icon: <Briefcase className="h-3.5 w-3.5" /> },
+              { tone: 'recovery', label: 'Recovery', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+            ].map(({ tone, label, icon }) => (
               <button
                 key={tone}
-                onClick={() => cardRefs[tone].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className="rounded-full border border-border/70 bg-surface-2 px-3 py-1 text-xs font-semibold capitalize text-muted-foreground transition hover:border-primary hover:text-primary"
+                onClick={() => cardRefs[tone as Tone].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
               >
-                {tone}
+                {icon}
+                {label}
               </button>
             ))}
-            <Badge variant="outline" className="text-xs border-border/70 bg-surface-2">
-              {responses.reviewType === 'positive'
-                ? 'Positive'
-                : responses.reviewType === 'negative'
+            <div className="ml-auto inline-flex items-center gap-2">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold border ${
+                  responses.reviewType === 'negative'
+                    ? 'border-red-400/50 bg-red-500/10 text-red-100'
+                    : 'border-emerald-400/50 bg-emerald-500/10 text-emerald-50'
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    responses.reviewType === 'negative' ? 'bg-red-400' : 'bg-emerald-400'
+                  }`}
+                />
+                {responses.reviewType === 'negative'
                   ? 'Negative'
-                  : 'Neutral'}
-            </Badge>
+                  : responses.reviewType === 'positive'
+                    ? 'Positive'
+                    : 'Neutral'}
+              </span>
+            </div>
           </div>
         </motion.div>
       </div>
